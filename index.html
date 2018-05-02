@@ -256,6 +256,266 @@
                             </script>
                         </div>
                     </section>
+
+                    <section>
+                        <h3>No parallelism</h3>
+                        <div style="font-size:15px">
+                        <pre><code data-trim class="python">
+                            import numpy as np
+
+                            def remove_i(x, i):
+                                """Drops the ith element of an array."""
+                                shape = (x.shape[0]-1,) + x.shape[1:]
+                                y = np.empty(shape, dtype=float)
+                                y[:i] = x[:i]
+                                y[i:] = x[i+1:]
+                                return y
+
+                            def a(i, x, G, m):
+                                """The acceleration of the ith mass."""
+                                x_i = x[i]
+                                x_j = remove_i(x, i) # don't compute on itself
+                                m_j = remove_i(m, i)
+                                diff = x_j - x_i
+                                mag3 = np.sum(diff**2, axis=1)**1.5
+                                # compute acceleration on ith mass
+                                result = G * np.sum(diff * (m_j / mag3)[:,np.newaxis], axis=0)
+                                return result
+                        </code></pre>
+                        <pre><code data-trim class="python">
+                            def timestep(x0, v0, G, m, dt):
+                                """Computes the next position and velocity for all masses given
+                                initial conditions and a time step size.
+                                """
+                                N = len(x0)
+                                x1 = np.empty(x0.shape, dtype=float)
+                                v1 = np.empty(v0.shape, dtype=float)
+                                for i in range(N): # update locations for all masses each step
+                                    a_i0 = a(i, x0, G, m)
+                                    v1[i] = a_i0 * dt + v0[i]
+                                    x1[i] = a_i0 * dt**2 + v0[i] * dt + x0[i]
+                                return x1, v1
+
+                            def initial_cond(N, D):
+                                """Generates initial conditions for N unity masses at rest
+                                starting at random positions in D-dimensional space.
+                                """
+                                x0 = np.random.rand(N, D) # use random initial locations
+                                v0 = np.zeros((N, D), dtype=float)
+                                m = np.ones(N, dtype=float)
+                                return x0, v0, m
+                        </code></pre>
+                        </div>
+                    </section>
+                    <section>
+                        <div>
+                        <pre><code data-trim class="python">
+                            x0, v0, m = initial_cond(10, 2)
+                            x1, v1 = timestep(x0, v0, 1.0, m, 1.0e-3)
+                        </code></pre>
+
+                        <p class="fragment">Driver function that simulates \(S\) time steps:</p>
+                        <pre><code data-trim class="python fragment">
+                            def simulate(N, D, S, G, dt):
+                                x0, v0, m = initial_cond(N, D)
+                                for s in range(S):
+                                    x1, v1 = timestep(x0, v0, G, m, dt)
+                                    x0, v0 = x1, v1
+                        </code></pre>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Measure performance:</h3>
+                        <br/>
+                        <div>
+                        <pre><code data-trim class="python">
+                            import time
+                            Ns = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+                            runtimes = []
+                            for N in Ns:
+                                start = time.time()
+                                simulate(N, 3, 300, 1.0, 1e-3)
+                                stop = time.time()
+                                runtimes.append(stop - start)
+                        </code></pre>
+                        </div>
+                        <p class="fragment">Does the problem scale quadratically?</p>
+                    </section>
+
+                    <section>
+                        <h3>Threads</h3>
+                        <br/>
+                        <p class="fragment">Threads perform work and are not blocked by work of other threads.</p>
+                        <p class="fragment">Threads can communicate with each other through state</p>
+                    </section>
+                    <section>
+                        <h3>Threads: probably don't use in Python.</h3>
+                        <br/>
+                        <p class="fragment">All threads execute in the same process as Python itself.</p>
+                        <p class="fragment">Where to use? If you have high latency tasks where you can use spare time for another task (e.g., downloading a large file)</p>
+                    </section>
+
+                    <section>
+                        <h3>N-body with threading</h3>
+                        <div style="font-size:20px">
+                        <pre><code data-trim class="python">
+                            from threading import Thread
+
+                            class Worker(Thread):
+                                """Computes x, v, and a of the ith body."""
+                                def __init__(self, *args, **kwargs):
+                                    super(Worker, self).__init__(*args, **kwargs)
+                                    self.inputs = [] # buffer of work for thraeds
+                                    self.results = [] # buffer of return values
+                                    self.running = True # setting to False causes run() to end safely
+                                    self.daemon = True # allow thread to be terminated with Python
+                                    self.start()
+
+                                def run(self):
+                                    while self.running:
+                                        if len(self.inputs) == 0: # check for work
+                                            continue
+                                        i, x0, v0, G, m, dt = self.inputs.pop(0)
+                                        a_i0 = a(i, x0, G, m) # body of original timestep()
+                                        v_i1 = a_i0 * dt + v0[i]
+                                        x_i1 = a_i0 * dt**2 + v0[i] * dt + x0[i]
+                                        result = (i, x_i1, v_i1)
+                                        self.results.append(result)
+                        </code></pre>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>Thread pools</h3>
+                        <p class="fragment">Expensive to create and start threads, so create pool that persists</p>
+
+                        <div style="font-size:20px">
+                        <pre><code data-trim class="python fragment">
+                            class Pool(object):
+                                """A collection of P worker threads that distributes tasks
+                                evenly across them.
+                                """
+                                def __init__(self, size):
+                                    self.size = size
+                                    # create new workers based on size
+                                    self.workers = [Worker() for p in range(size)]
+
+                                def do(self, tasks):
+                                    for p in range(self.size):
+                                        self.workers[p].inputs += tasks[p::self.size] # evenly distribute tasks
+                                    while any([len(worker.inputs) != 0 for worker in self.workers]):
+                                        pass # wait for all workers to finish
+                                    results = []
+                                    for worker in self.workers: # get results back from workers
+                                        results += worker.results
+                                        worker.results.clear()
+                                    return results # return complete list of results for all inputs
+
+                                def __del__(self): # stop workers when pool is shut down
+                                    for worker in self.workers:
+                                        worker.running = False
+                        </code></pre>
+                        </div>
+                    </section>
+                    <section>
+                        <div style="font-size:20px">
+                        <pre><code data-trim class="python">
+                            def timestep(x0, v0, G, m, dt, pool):
+                                """Computes the next position and velocity for all masses given
+                                initial conditions and a time step size.
+                                """
+                                N = len(x0)
+                                tasks = [(i, x0, v0, G, m, dt) for i in range(N)] # create task for each body
+                                results = pool.do(tasks) # run tasks
+                                x1 = np.empty(x0.shape, dtype=float)
+                                v1 = np.empty(v0.shape, dtype=float)
+                                for i, x_i1, v_i1 in results: # rearrange results (probably not in order)
+                                    x1[i] = x_i1
+                                    v1[i] = v_i1
+                                return x1, v1
+                        </code></pre>
+                        <p class="fragment">How does simulation perform as function of \(P\)?</p>
+                        <pre><code data-trim class="python fragment">
+                            Ps = [1, 2, 4, 8]
+                            runtimes = []
+                            for P in Ps:
+                                start = time.time()
+                                simulate(P, 64, 3, 300, 1.0, 1e-3)
+                                stop = time.time()
+                                runtimes.append(stop - start)
+                        </code></pre>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>Multiprocessing</h3>
+                        <br/>
+                        <p class="fragment">More like threading available in other languages...</p>
+
+                        <p class="fragment">Can't be used directly from interactive interpreter; main module must be importable by fork processes</p>
+
+                        <p class="fragment">Provides <code>Pool</code> class for us, used with powerful <code>map()</code> function.</p>
+
+                    </section>
+                    <section>
+                        <div style="font-size:20px">
+                        <pre><code data-trim class="python">
+                            from multiprocessing import Pool
+
+                            # function needs one argument
+                            def timestep_i(args):
+                                """Computes the next position and velocity for the ith mass."""
+                                i, x0, v0, G, m, dt = args # unpack arguments to original function
+                                a_i0 = a(i, x0, G, m) # body of original timestep()
+                                v_i1 = a_i0 * dt + v0[i]
+                                x_i1 = a_i0 * dt**2 + v0[i] * dt + x0[i]
+                                return i, x_i1, v_i1
+                        </code></pre>
+
+                        <pre><code data-trim class="python fragment">
+                            def timestep(x0, v0, G, m, dt, pool):
+                                """Computes the next position and velocity for all masses given
+                                initial conditions and a time step size.
+                                """
+                                N = len(x0)
+                                tasks = [(i, x0, v0, G, m, dt) for i in range(N)]
+                                results = pool.map(timestep_i, tasks) # replace old do() with Pool.map()
+                                x1 = np.empty(x0.shape, dtype=float)
+                                v1 = np.empty(v0.shape, dtype=float)
+                                for i, x_i1, v_i1 in results:
+                                    x1[i] = x_i1
+                                    v1[i] = v_i1
+                                return x1, v1
+                        </code></pre>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>How does <code>multiprocessing</code> scale?</h3>
+                        <pre><code data-trim class="python">
+                            import time
+                            Ps = [1, 2, 4, 8]
+                            runtimes = []
+                            for P in Ps:
+                                start = time.time()
+                                simulate(P, 256, 3, 300, 1.0, 1e-3)
+                                stop = time.time()
+                                runtimes.append(stop - start)
+                        </code></pre>
+                    </section>
+
+                </section>
+
+                <section>
+                    <section>
+                        <h3>MPI: Message-Passing Interface</h3>
+                        <br/>
+                        <p class="fragment">Supercomputing is built on MPI.</p>
+
+                        <p class="fragment">MPI scales from hundreds of thousands to millions of processors.</p>
+
+                        <p class="fragment">Processes are called ranks and given integer identifiers; rank 0 is usually the "master" that controls other ranks.</p>
+                    </section>
                 </section>
 
 			</div>
