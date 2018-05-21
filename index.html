@@ -544,15 +544,16 @@
                     </section>
                     <section>
                         <h3>Simple example</h3>
-                        <br>
-                        <pre><code data-trim class="python fragment">
+                        <pre><code data-trim class="python fragment stretch">
                             # contents of example.py
                             # import the necessary packages
                             import sys
                             import argparse
 
                             # construct the argument parse and parse the arguments
-                            parser = argparse.ArgumentParser(description='This is a simple command-line program.')
+                            parser = argparse.ArgumentParser(
+                                description='This is a simple command-line program.'
+                                )
                             parser.add_argument('-n', '--name', required=True,
                                                 help='name of the user'
                                                 )
@@ -565,6 +566,76 @@
                             $ python example.py --help
                             $ python example.py --name Kyle
                         </code></pre>
+                    </section>
+                    <section>
+                        <h3>Optional arguments</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            ...
+                            parser.add_argument('-c', '--count', action='store_true',
+                                                default=False,
+                                                help='Count number of characters in name'
+                                                )
+                            args = parser.parse_args(sys.argv[1:])
+
+                            print("Hi there {}, it's nice to meet you!".format(args.name))
+                            if args.count:
+                                print("Name length: {}".format(len(args.name)))
+                        </code></pre>
+                        <pre><code data-trim class="bash fragment">
+                            $ python example.py --help
+                            $ python example.py --name Kyle -c
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>Optional arguments</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            ...
+                            parser.add_argument('-a', '--age',
+                                                default=25,
+                                                type=int,
+                                                help='Age of person'
+                                                )
+                            args = parser.parse_args(sys.argv[1:])
+
+                            print("Hi there {}, it's nice to meet you!".format(args.name))
+                            if args.count:
+                                print("Name length: {}".format(len(args.name)))
+                            print("Age: {}".format(args.age))
+                        </code></pre>
+                        <pre><code data-trim class="bash fragment">
+                            $ python example.py --help
+                            $ python example.py --name Kyle --age 31
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>More complex input</h3>
+                        <br>
+                        <p class="fragment">
+                            For larger/more complex input, may be better to use an input file.
+                        </p>
+                        <p class="fragment">
+                            YAML is a good option for this: use pyyaml (<code>import yaml</code>)
+                        </p>
+                    </section>
+                    <section>
+                        <p class="fragment"><code>input.yaml<code>:</p>
+                        <pre><code data-trim class="yaml fragment">
+                            case: square cavity
+                            length: 1.0
+                            resolution: 0.01
+                            velocities:
+                              - 1.0
+                              - 10.0
+                              - 100.0
+                        </code></pre>
+                        <pre><code data-trim class="python fragment">
+                            import yaml
+                            with open('input.yaml', 'r') as f:
+                                inputs = yaml.safe_load(f)
+                        </code></pre>
+                        <p class="fragment">Returns a dict</p>
                     </section>
                 </section>
 
