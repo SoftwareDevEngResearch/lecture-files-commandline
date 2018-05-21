@@ -264,8 +264,307 @@
                             <li><code>uint</code>: unsigned integer types</li>
                             <li><code>float</code>: floating-point types</li>
                             <li><code>complex</code>: complex floating-point types</li>
-                            <li><code>complex</code>: complex floating-point types</li>
+                            <li><code>string</code>: fixed-length raw string type</li>
                         </ul>
+                        <p class="fragment">Also: Groups, links, and hidden nodes</p>
+                    </section>
+
+                    <section>
+                        <h3>Getting started with HDF5 files</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            import tables as tb
+                            h5file = tb.open_file('/path/to/file', 'a')
+                            ...
+                        </code></pre>
+                        <p class="fragment">... or, better yet:</p>
+                        <pre><code data-trim class="python fragment">
+                            import tables as tb
+                            with tb.open_file('/path/to/file', 'a') as h5file:
+                                ...
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>HDF5 file modes</h3>
+                        <br>
+                        <ul style="font-size:30px">
+                            <li>
+                                <code>'r'</code>: Read-only; no data can be modified.
+                            </li>
+                            <li>
+                                <code>'w'</code>: Write; create a new file (delete existing file with that name).
+                            </li>
+                            <li>
+                                <code>'a'</code>: Append; open existing file for reading or writing, or create new file.
+                            </li>
+                            <li>
+                                <code>'r+'</code>: Similar to a, but file must exist.
+                            </li>
+                        </ul>
+                    </section>
+                    <section>
+                        <p class="fragment">
+                            HDF5 files: all nodes stem from root node: <code>/</code> or <code>h5file.root</code>
+                        </p>
+                        <p class="fragment">
+                            <em>Natural naming</em>: can access subnodes as attributes of "parent" nodes, like <code>h5file.root.a_group.some_data</code>
+                        </p>
+                        <p class="fragment">
+                            (all relevant nodes in the tree must have names that are valid Python variable names)
+                        </p>
+                    </section>
+                    <section>
+                        <h3>Creating nodes, arrays, and tables</h3>
+                        <br>
+                        <p class="fragment">
+                            Create and access a group on the root node:
+                            <pre><code data-trim class="python fragment">
+                                h5file.create_group(h5file.root, 'a_group', "My Group")
+                                h5file.root.a_group
+                            </code></pre>
+                        </p>
+                        <p class="fragment">
+                            Datasets: arrays and tables, each with a corresponding <code>create</code> method:
+                        </p>
+                        <ul>
+                            <li class="fragment">
+                                Arrays are fixed size, must be created with data.
+                            </li>
+                            <li class="fragment">
+                                Tables have a set data type but are variable length, so we can append to them after creation.
+                            </li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3>Creating nodes, arrays, and tables</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment" style="font-size:20px">
+                            # integer array
+                            h5file.create_array(h5file.root.a_group, 'arthur_count', [1, 2, 5, 3])
+
+                            # tables need descriptions
+                            dt = np.dtype([('id', int), ('name', 'S10')])
+                            knights = np.array([(42, 'Lancelot'), (12, 'Bedivere')], dtype=dt)
+                            h5file.create_table(h5file.root, 'knights', dt)
+                            h5file.root.knights.append(knights)
+                        </code></pre>
+                        <p class="fragment">Hierarchy at this point:</p>
+                        <pre><code data-trim class="text fragment" style="font-size:20px">
+                            /
+                            |-- a_group/
+                            |   |-- arther_count
+                            |
+                            |-- knights
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h3>Arrays & tables preserve original flavor</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment" style="font-size:15px">
+                            h5file.root.a_group.arthur_count[:]
+                            type(h5file.root.a_group.arthur_count[:])
+                            type(h5file.root.a_group.arthur_count)
+                        </code></pre>
+
+                        <pre><code data-trim class="python fragment" style="font-size:15px">
+                            h5file.root.knights[1] # pull out second row
+
+                            h5file.root.knights[:1] # slice the first row
+
+                            mask = (h5file.root.knights.cols.id[:] < 28)
+                            h5file.root.knights[mask] # create mask and apply to table
+
+                            h5file.root.knights[([1, 0],)] #Fancy index the second and first rows, in that order
+                        </code></pre>
+                        <p class="fragment">
+                            Memory mapping: pull in data from disk only as needed; HDF5 takes care of this automatically
+                        </p>
+                    </section>
+
+                    <section>
+                        <h3>Can create rows and append to tables</h3>
+                        <br>
+                        <div style="font-size:25px">
+                        <pre><code data-trim class="python fragment stretch">
+                            table_def = {'time': tables.Float64Col(pos=0),
+                                         'temperature': tables.Float64Col(pos=1),
+                                         'pressure': tables.Float64Col(pos=2),
+                                         }
+                            with tables.open_file(filename, mode='w', title="Table title"
+                                                  ) as h5file:
+                                table = h5file.create_table(where=h5file.root,
+                                                            name='simulation',
+                                                            description=table_def
+                                                            )
+                                timestep = table.row
+                                # Save initial conditions
+                                timestep['time'] = self.reac_net.time
+                                timestep['temperature'] = self.reac.T
+                                timestep['pressure'] = self.reac.thermo.P
+                                timestep.append()
+
+                                # Main time integration loop
+                                while sim.time < time_end:
+                                    sim.step() # perform a single integration step
+
+                                    # Save new timestep information
+                                    timestep['time'] = sim.time
+                                    timestep['temperature'] = sim.temperature
+                                    timestep['pressure'] = sim.pressure
+
+                                    # Add ``timestep`` to table
+                                    timestep.append()
+                                table.flush()
+                        </code></pre>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3>Accessing this table</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment stretch">
+                            with tables.open_file(self.meta['save-file'], 'r') as h5file:
+                                # Load Table with Group name simulation
+                                table = h5file.root.simulation
+
+                                time = table.col('time')
+                                pressure = table.col('pressure')
+                                temperature = table.col('temperature')
+                        </code></pre>
+                        <p class="fragment">
+                            These are NumPy arrays!
+                        </p>
+                    </section>
+
+                    <section>
+                        <h3>Hierarchy Layout</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            # particles:  id, kind,       velocity
+                            particles = [(42, 'electron', 72.0),
+                                         (43, 'proton', 0.1),
+                                         (44, 'electron', 76.8),
+                                         (45, 'neutron', 0.39),
+                                         (46, 'neutron', 0.72),
+                                         (47, 'neutron', 0.55),
+                                         (48, 'proton', 0.18),
+                                         (49, 'neutron', 0.23),
+                                         ...
+                                         ]
+                        </code></pre>
+                        <p class="fragment">
+                            If we know we want to look at neutral and charged particles separately,
+                            then why search through all the particles all the time?
+                        </p>
+                    </section>
+                    <section>
+                        <pre><code data-trim class="python fragment">
+                            neutral = [(45, 'neutron',  0.39),
+                                       (46, 'neutron',  0.72),
+                                       (47, 'neutron',  0.55),
+                                       (49, 'neutron',  0.23),
+                                       ...
+                                       ]
+
+                            charged = [(42, 'electron', 72.0),
+                                       (43, 'proton', 0.1),
+                                       (44, 'electron', 76.8),
+                                       (48, 'proton', 0.18),
+                                       ...
+                                       ]
+                        </code></pre>
+                        <p class="fragment">
+                            But now <code>kind</code> is redundant in the <code>neutral</code> table.
+                            Let's delete this column and rely on the structure of the tables together
+                            to dictate which table refers to what.
+                        </p>
+                    </section>
+                    <section>
+                        <pre><code data-trim class="python fragment">
+                            neutral = [(45, 0.39),
+                                       (46, 0.72),
+                                       (47, 0.55),
+                                       (49, 0.23),
+                                       ...
+                                       ]
+
+                            charged = [(42, 'electron', 72.0),
+                                       (43, 'proton', 0.1),
+                                       (44, 'electron', 76.8),
+                                       (48, 'proton', 0.18),
+                                       ...
+                                       ]
+                        </code></pre>
+                        <p class="fragment">
+                            We are embedding information directly into the semantics of the hierarchy.
+                        </p>
+                    </section>
+                    <section>
+                        <p class="fragment">
+                            We could add another layer that distinguishes the particles based on detector:
+                        </p>
+                        <pre><code data-trim class="text fragment">
+                            /
+                            |-- detector1/
+                            |   |-- neutral
+                            |   |-- charged
+                            |
+                            |-- detector2/
+                            |   |-- neutral
+                            |   |-- charged
+                        </code></pre>
+                        <p class="fragment">
+                            Data should be broken up like this to improve access time speeds.
+                            This is more efficient because there are: fewer rows to search, fewer rows
+                            to pull from disk, and fewer columns in description (decreases size of rows)
+                        </p>
+                    </section>
+
+                    <section>
+                        <h3>More complicated topics: chunking, in-core and out-of-core operations, querying, compression</h3>
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h3>Creating command-line interfaces for Python progrmas with argparse</h3>
+                        <br>
+                        <p class="fragment">
+                            Rather than only calling your package from another Python code, you can (fairly easily)
+                            create a command-line interface.
+                        </p>
+                        <pre><code data-trim class="bash fragment">
+                            myprogram --help
+
+                            myprogram --input inputfile.txt --output output.h5
+                        </code></pre>
+                        <p class="fragment">
+                            You can/should also use these to change inputs or settings to your programs without modifying code.
+                        </p>
+                    </section>
+                    <section>
+                        <h3>Simple example</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            # contents of example.py
+                            # import the necessary packages
+                            import sys
+                            import argparse
+
+                            # construct the argument parse and parse the arguments
+                            parser = argparse.ArgumentParser(description='This is a simple command-line program.')
+                            parser.add_argument('-n', '--name', required=True,
+                                                help='name of the user'
+                                                )
+                            args = parser.parse_args(sys.argv[1:])
+
+                            # display a friendly message to the user
+                            print("Hi there {}, it's nice to meet you!".format(args.name))
+                        </code></pre>
+                        <pre><code data-trim class="bash fragment">
+                            $ python example.py --help
+                            $ python example.py --name Kyle
+                        </code></pre>
                     </section>
                 </section>
 
