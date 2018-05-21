@@ -4,10 +4,10 @@
 	<head>
 		<meta charset="utf-8">
 
-                <title>Software Development for Engineering Research - Getting Started</title>
+                <title>Files and Command-Line Arguments in Python</title>
 
                 <meta name="description" content="
-                First lecture for ME 599: Software Development for Engineering Research
+                Lecture on files and command-line arguments in Python for ME 599: Software Development for Engineering Research
                 ">
 		<meta name="author" content="Kyle Niemeyer">
 
@@ -51,7 +51,6 @@
                     <h3>Kyle Niemeyer. 21 May 2018</h3>
                     <h3>ME 599, Corvallis, OR</h3>
                 </section>
-                <section>
                 <section data-markdown>
                     <textarea data-template>
                         ## Today
@@ -62,18 +61,18 @@
                 </section>
                 <section>
                     <section>
-                        <h2>Variety of situations for working with files:</h2>
+                        <h3>Situations for working with files:</h3>
                         <br>
                         <ul>
                           <li class="fragment">
                               Collaborator emails you raw data, want to look at the results
                           </li>
                           <li class="fragment">
-                              You want to email a collaborator some of your data from Python
+                              You want to email a collaborator data from Python
                           </li>
                           <li class="fragment">
-                              You need to use external code that takes input or data file (potentially hundreds or thousands of times);
-                              want to automate generation of input files from data in Python
+                              You need to use external code that takes input or data file (potentially 100s/1000s of times);
+                              want to automate generation of input files from data
                           </li>
                           <li class="fragment">
                               An external program writes out one or more results files, and you want to read and perform analysis
@@ -85,337 +84,189 @@
                     </section>
 
                     <section>
-                        <img src="./images/python-class-breakdown.png" height="300" alt="Breakdown of who took Python class">
-                        <img src="./images/command-line-breakdown.png" height="300" alt="Breakdown of command line comfort">
-                        <img src="./images/OS-breakdown.png" height="300" alt="Breakdown of OS preferences">
+                        <h3>Saving or loading data: file handle object</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            f = open('data.txt')
+                        </code></pre>
+                        <p class="fragment">This <strong>does</strong>:
+                        <ol class="fragment">
+                            <li>Make sure <code>data.txt</code> exists</li>
+                            <li>Create new handle to this file</li>
+                            <li>Set cursor position <code>pos</code> to start of the file, <code>pos = 0</code></li>
+                        </ol>
+                        </p>
+                        <p class="fragment"> This <strong>does not</strong> read into memory any of the file,
+                            write anything to the file, or close the file.
+                        </p>
                     </section>
-
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## (Introductions)
-                        </textarea>
-                    </section>
-                </section>
-
-                <section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## Who am I?
-
-                            <img src="./images/kyle-niemeyer-web-face.jpg" height="200" alt="Kyle Niemeyer">
-
-                            Dr. Kyle Niemeyer, Assistant Professor, MIME
-
-                            **Background:** computational combustion modeling
-
-                            **Languages:** Matlab, Fortran, C/C++/CUDA, Python
-                        </textarea>
-                    </section>
-
                     <section>
-                        <img src="./images/kyle-github-profile.png" height="600" alt="Kyle's GitHub profile">
-                    </section>
-                </section>
-
-                <section>
-                    <section>
-                        <h2>Course Resources</h2>
-                        </br>
-                        <ul>
-                          <li class="fragment">
-                            <b>Syllabus:</b>
-                            <a href="https://softwaredevengresearch.github.io/syllabus/">softwaredevengresearch.github.io/syllabus/</a>
-                          </li>
-
-                          <li class="fragment">
-                            <b>GitHub organization:</b> <a href="https://github.com/SoftwareDevEngResearch">github.com/SoftwareDevEngResearch</a>
-                          </li>
-
-                          <li class="fragment">
-                            <b>Other resources:</b>
-                            <a href="https://softwaredevengresearch.github.io/syllabus/#resources">softwaredevengresearch.github.io/syllabus/#resources</a>
-                          </li>
-
-                          <li class="fragment">
-                            <b>Gitter chat room:</b>
-                            <a href="https://gitter.im/SoftwareDevEngResearch/Lobby">https://gitter.im/SoftwareDevEngResearch/Lobby</a>
-                          </li>
+                        <h3>File handle methods</h3>
+                        <br>
+                        <ul style="font-size:30px">
+                            <li>
+                                <code>f.read(n=-1)</code>: Reads in n bytes; if n=-1 or not present, read entire rest of file.
+                            </li>
+                            <li>
+                                <code>f.readline()</code>: Read next full line, return string with newline character.
+                            </li>
+                            <li>
+                                <code>f.readlines()</code>: Reads entire rest of file, returns list of strings (with newlines).
+                            </li>
+                            <li>
+                                <code>f.seek(pos)</code>: Move file cursor to specified position.
+                            </li>
+                            <li>
+                                <code>f.tell()</code>: Return current position in file.
+                            </li>
+                            <li>
+                                <code>f.write(s)</code>: Insert string s at current position.
+                            </li>
+                            <li>
+                                <code>f.flush()</code>: Perform all pending write operations.
+                            </li>
+                            <li>
+                                <code>f.close()</code>: Close file (no more reading or writing).
+                            </li>
                         </ul>
                     </section>
-
                     <section>
-                        <h2>Textbook</h1>
-                        <br/>
-                        <a href="http://physics.codes/" class="image"><img src="./images/effective-comp-physics.jpg" height="300" alt="Effective Computation in Physics"></a>
-
-                        <p><a href="http://physics.codes/">http://physics.codes/</a></p>
-
-                        <p>Chapters 1–6 should be review</p>
+                        <h3>Example: read in matrix</h3>
+                        <br>
+                        <p><code>matrix.txt</code> contents:
+                        <pre><code data-trim class="text">
+                            1,4,15,9
+                            0,11,7,3
+                            2,8,12,13
+                            14,5,10,6
+                        </code></pre>
+                        </p>
+                        <pre><code data-trim class="python fragment">
+                            f = open('matrix.txt')
+                            matrix = []
+                            for line in f.readlines():
+                                row = [int(x) for x in line.split(',')]
+                                matrix.append(row)
+                            f.close()
+                        </code></pre>
+                        <p class="fragment">Make sure to close the file!</p>
                     </section>
-
                     <section>
-                        <h2>Project</h2>
-                        <br/>
-                        <p>Most of your work in the class will be centered around a project developing a new software package for your research.</p>
+                        <h3>How to do this better?</h3>
+                        <br>
+                        <p>Use context manager & <code>with</code> to automatically close:</p>
+                        <pre><code data-trim class="python fragment">
+                            import numpy as np
+                            with open('matrix.txt', 'r') as f:
+                                lines = f.readlines()
+
+                            matrix = np.array([[int(x) for x in line.split(',')]
+                                              for line in lines]
+                                              )
+                        </code></pre>
+                        <p class="fragment"> ... actually, this example can be even easier:</p>
+                        <pre><code data-trim class="python fragment">
+                            import numpy as np
+                            matrix = np.genfromtxt('matrix.txt', delimiter=',')
+                        </code></pre>
                     </section>
-                </section>
-
-                <section>
                     <section>
-                        <h2>Rest of today: version control</h2>
-
-                        <h3 class="fragment">What for?</h3>
-                        <ul>
-                          <li class="fragment">Back up changing files</li>
-                          <li class="fragment">Store and access an annotated history</li>
-                          <li class="fragment">Manage merging of changes between different change sets</li>
+                        <h3>File modes</h3>
+                        <br>
+                        <p>When opening a file, by default it opens in read-only mode. Other file modes:</p>
+                        <ul style="font-size:30px">
+                            <li>
+                                <code>'r'</code>: Read-only, no writing. Starts at <code>pos = 0</code>.
+                            </li>
+                            <li>
+                                <code>'w'</code>: Write. Creates file if it doesn't exist (if it does, contents are deleted).
+                                Starts at <code>pos = 0</code>.
+                            </li>
+                            <li>
+                                <code>'a'</code>: Append. Opens file for writing but does not delete contents;
+                                creates file if it doesn't exist. Starting <code>pos</code> is end of file.
+                            </li>
+                            <li>
+                                <code>'+'</code>: Update. Opens for reading and writing, does not delete current contents.
+                                Starts at <code>pos = 0</code>.
+                            </li>
                         </ul>
                     </section>
-
                     <section>
-                        <h2>Why important?</h2>
-
-                        <a href="http://phdcomics.com/comics/archive.php?comicid=1323" class="image"><img class="fragment" src="./images/phd-comics-versions.gif" height="450" alt="Comic on file versions from PhD Comics http://phdcomics.com/comics/archive.php?comicid=1323"></a>
-
-                        <p class="fragment"><small><a href="http://phdcomics.com/comics/archive.php?comicid=1323">Image credit: Jorge Cham, PhD Comics</a></small></p>
+                        <h3>More complicated example: read in matrix and add</h3>
+                        <br>
+                        <pre><code data-trim class="python fragment">
+                            with open('matrix.txt', 'r+') as f:
+                                orig = f.read()
+                                f.seek(0)
+                                f.write('0,0,0,0\n')
+                                f.write(orig)
+                                f.write('\n1,1,1,1')
+                        </code></pre>
                     </section>
-
-                    <section>
-                        <h2>Saving copies</h2>
-                        <p class="fragment"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code.py</code></p>
-                        <p class="fragment"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code-2.py</code></p>
-                        <p class="fragment"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code-fix.py</code></p>
-                        <p class="fragment"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code-final.py</code></p>
-                        <p class="fragment"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code-final-4apr.py</code></p>
-                    </section>
-
-                    <section>
-                        <h2>Git commits</h2>
-                        <p class="fragment current-visible"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code.py</code></p>
-                        <p class="fragment current-visible"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code.py</code></p>
-                        <p class="fragment current-visible"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code.py</code></p>
-                        <p class="fragment current-visible"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code.py</code></p>
-                        <p class="fragment"><img src="./images/code-file.png" height="50" style="vertical-align:middle"> <code>important_code.py</code></p>
-                    </section>
-
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## Types of Version Control
-
-                            <p class="fragment">Centralized:
-                                <ul>
-                                  <li class="fragment">Concurrent Version System (cvs)</li>
-                                  <li class="fragment">Subversion (svn)</li>
-                                  <li class="fragment">Perforce (p4)</li>
-                                </ul>
-                            </p>
-
-                            <p class="fragment">Distributed:
-                                <ul>
-                                  <li class="fragment">Decentralized CVS (dcvs)</li>
-                                  <li class="fragment">mercurial (hg)</li>
-                                  <li class="fragment">bazaar (bzr)</li>
-                                  <li class="fragment"><b style="color:blue">Git (git)</b></li>
-                                </ul>
-                            </p>
-                        </textarea>
-                    </section>
-
-                    <section>
-                        <h2>Git</h2>
-
-                        <div class="fragment">
-                            <img src="./images/giant-swiss-army-knife.jpg" height="350">
-                            <blockquote cite="http://ixd.ucsd.edu/home/f16/index.php">
-                                Git is a knife whose handle is also a knife. – <a href="http://ixd.ucsd.edu/home/f16/index.php">Philip Guo</a>
-                            </blockquote>
-                        </div>
-                    </section>
-
-                    <section>
-                        <a href="https://xkcd.com/1597/" class="image"><img src="./images/xkcd-git.png" height="500" alt="If that doesn't fix it, git.txt contains the phone number of a friend of mine who understands git. Just wait through a few minutes of 'It's really pretty simple, just think of branches as...' and eventually you'll learn the commands that will fix everything."></a>
-
-                        <p><small><a href="https://xkcd.com/1597/">Image credit: xkcd</a></small></p>
-                    </section>
-
                 </section>
 
                 <section>
                     <section>
-                        <h2>Getting Started with Git</h2>
-                        <br/>
-                        <br/>
-                        <pre><code data-trim class="bash">
-                            $ git --help
+                        <h3>Quick intro to HDF5</h3>
+                        <br>
+                        <p class="fragment">
+                            Basic idea: better to store structured, numerical data in binary formats over
+                            plain-text ASCII files. Why? Smaller.
+                        </p>
+                        <pre><code data-trim class="text fragment">
+                            # small ints        # medium ints
+                            42   (4 bytes)      123456   (4 bytes)
+                            '42' (2 bytes)      '123456' (6 bytes)
 
-                            $ git config --global user.name "Kyle Niemeyer"
-                            $ git config --global user.email "kyle.niemeyer@oregonstate.edu"
-                            $ git config --global core.editor "vim"
+                            # near-int floats   # e-notation floats
+                            12.34   (8 bytes)   42.424242E+42   (8 bytes)
+                            '12.34' (5 bytes)   '42.424242E+42' (13 bytes)
                         </code></pre>
+                        <p class="fragment">
+                            Also, faster I/O, since binary files save in native format.
+                        </p>
                     </section>
-
                     <section>
-                        <pre><code data-trim class="bash">
-                            ~ $ mkdir analysis_code
-                            ~ $ cd analysis_code
-
-                            ~/analysis_code $ git init
-                            Initialized empty Git repository in ~/analysis_code/.git/
-                        </code></pre>
+                        <h3>HDF5: Hierarchical Data Format</h3>
+                        <br>
+                        <p class="fragment">
+                            HDF5 files store data in binary format.
+                        </p>
+                        <p class="fragment">
+                            HDF5 provides database features like storing many datasets,
+                            user-defined metadata, optimized I/O, and ability to query contents.
+                        </p>
+                        <p class="fragment">
+                            HDF5 is a filesystem in a file: provides nested tree structure for datasets.
+                        </p>
                     </section>
-
                     <section>
-                        <pre><code data-trim class="bash">
-                            ~/analysis_code $ ls
-                            ~/analysis_code $ ls -A
-                            .git
-
-                            ~/analysis_code $ cd .git && ls -A
-                            HEAD    config    description    hooks    index    info    logs    objects    packed-refs    refs
-                        </code></pre>
-                        <br/>
-                        <br/>
-                        <p class="fragment">Try this yourself.</p>
-                    </section>
-
-                    <section>
-                        <h2>Adding files</h2>
-                        <br/>
-
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ touch README.md
-                        </code></pre>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git add README.md
-                        </code></pre>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git status
-                        </code></pre>
-                        <br/>
-                        <br/>
-                        <p class="fragment">Try this yourself.</p>
-                    </section>
-
-                    <section>
-                        <h2>Committing changes</h2>
-
-                        <p class="fragment">Snapshot of repository = <b>revision</b></p>
-                        <br/>
-                        <p class="fragment">Committing a revision:
-                            <ul>
-                              <li class="fragment">Saves current state with a unique ID (hash)</li>
-                              <li class="fragment">Names you as author</li>
-                              <li class="fragment">Allows you to add a message</li>
+                        <h3>Using PyTables for HDF5</h3>
+                        <br>
+                        <p><code>import tables as tb</code></p>
+                        <p class="fragment">
+                            PyTables provides five basic dataset classes:
+                            <ul class="fragment">
+                                <li><code>Array</code>: files of the filesystem</li>
+                                <li><code>CArray</code>: chunked arrays</li>
+                                <li><code>EArray</code>: extendable arrays</li>
+                                <li><code>VLArray</code>: variable-length arrays</li>
+                                <li><code>Table</code>: structured arrays</li>
                             </ul>
-
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git commit
-                        </code></pre>
-                        <p class="fragment">Try this yourself.</p>
+                        </p>
                     </section>
-
                     <section>
-                        <h2>Options to save time:</h2>
-                        <br/>
-                        <br/>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git commit -m "This is my message"
-                        </code></pre>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git commit -am "This is my message
-                                              committing all changes"
-                        </code></pre>
+                        <p>Constructs need to be composed of atomic types:</p>
+                        <ul class="fragment">
+                            <li><code>bool</code>: true or false type</li>
+                            <li><code>int</code>: signed integer types</li>
+                            <li><code>uint</code>: unsigned integer types</li>
+                            <li><code>float</code>: floating-point types</li>
+                            <li><code>complex</code>: complex floating-point types</li>
+                            <li><code>complex</code>: complex floating-point types</li>
+                        </ul>
                     </section>
-
-                    <section>
-                        <h2>Commit messages:</h2>
-                        <br/>
-                        <p class="fragment">Bad commit message:</p>
-                        <pre><code data-trim class="fragment bash">
-                            Fixed bug
-                        </code></pre>
-                        <p class="fragment">Good commit message:</p>
-                        <pre><code data-trim class="fragment bash">
-                            Fixed bug in mass calculation
-
-                            Due to incorrect density value, mass was being calculated
-                            orders of magnitude larger than it should. The correct value
-                            of density fixed this problem.
-                        </code></pre>
-                    </section>
-
-                    <section>
-                        <a href="https://xkcd.com/1296/" class="image"><img src="./images/xkcd-git_commit.png" height="400" alt="Merge branch 'asdfasjkfdlas/alkdjf' into sdkjfls-final"></a>
-
-                        <p><small><a href="https://xkcd.com/1296/">Image credit: xkcd</a></small></p>
-                    </section>
-
-                    <section>
-                        <h2>Viewing the history and differences</h2>
-                        <br/><br/>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git log
-                        </code></pre>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git diff
-                        </code></pre>
-                    </section>
-
-                    <section>
-                        <h2>Undoing work</h2>
-                        <br/>
-                        <p class="fragment">Un-add a file:</p>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git reset new-file.txt
-                        </code></pre>
-                        <p class="fragment">Reset repository to previous commit:</p>
-                        <pre><code data-trim data-noescape class="fragment bash">
-                            ~/analysis_code $ git reset [mode] [commit]
-                        </code></pre>
-                        <p class="fragment">Remove uncommitted changes:</p>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git checkout -- README.md
-                        </code></pre>
-                    </section>
-
-                    <section>
-                        <h2>Branches</h2>
-                        <br/>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git branch
-                            * master
-
-                            ~/analysis_code $ git branch experimental
-                            ~/analysis_code $ git branch
-                              experimental
-                            * master
-
-                            ~/analysis_code $ git branch new
-                            ~/analysis_code $ git branch -d new
-
-                            ~/analysis_code $ git checkout experimental
-                            ~/analysis_code $ git branch
-                            * experimental
-                              master
-                        </code></pre>
-                    </section>
-
-                    <section>
-                        <h2>Merging Branches</h2>
-                        <br/><br/>
-                        <pre><code data-trim class="fragment bash">
-                            ~/analysis_code $ git checkout master
-                            ~/analysis_code $ git merge experimental
-                            ~/analysis_code $ git log
-                        </code></pre>
-                    </section>
-                </section>
-
-                <section>
-                    <h3>Next time: remote version control (GitHub)</h3>
-
-                    </br>
-                    <p class="fragment">Assignment for next week: project proposal</p>
                 </section>
 
 			</div>
