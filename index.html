@@ -45,74 +45,43 @@
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
                 <section>
-                    <h1>Getting Started</h1>
+                    <h2>Files and Command-Line Inputs in Python</h2>
                     <h3>Software Development for Engineering Research</h3>
                     <br/>
-                    <h3>Kyle Niemeyer. 4 April 2018</h3>
+                    <h3>Kyle Niemeyer. 21 May 2018</h3>
                     <h3>ME 599, Corvallis, OR</h3>
                 </section>
                 <section>
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## Today: Class overview & getting started with version control
-                        </textarea>
-                    </section>
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Today
 
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### What this class **is** for:
-
-                            - Learning computational skills to be successful in modern research
-                            - Developing a software package from scratch for your research
-                        </textarea>
-                    </section>
-
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### What this class **isn't** for:
-
-                            - Just learning more Python (though you will)
-                            - Those who aren't comfortable doing open-ended, self-directed work
-                        </textarea>
-                    </section>
-
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### Motivation
-
-                            Nearly all research relies on software—even experimental—but researchers don't
-                            get trained in best practices in the same way as experimental methods.
-
-                        </textarea>
-                    </section>
-
-                    <section data-markdown>
-                        <textarea data-template>
-                            ### What are we going to learn about?
-
-                            - Version control
-                            - Collaborative software development
-                            - Structuring programs
-                            - Working with files
-                            - Improving performance, parallelization
-                            - Reproducible research
-                            - Writing about software, documentation
-                            - Sharing software openly, copyright
-                        </textarea>
-                    </section>
-
-                    <section data-markdown>
-                        <textarea data-template>
-                            ## Anything missing?
-                        </textarea>
-                    </section>
+                        - Working with files in Python, including HDF5
+                        - Building nice command-line interfaces using `argparse`
+                    </textarea>
                 </section>
                 <section>
                     <section>
-                        <h2>Who are you?</h1>
-                        <br/>
-                        <img src="./images/student-breakdown.png" height="300" alt="Student status breakdown">
-                        <img src="./images/area-breakdown.png" height="300" alt="Student research area breakdown">
+                        <h2>Variety of situations for working with files:</h2>
+                        <br>
+                        <ul>
+                          <li class="fragment">
+                              Collaborator emails you raw data, want to look at the results
+                          </li>
+                          <li class="fragment">
+                              You want to email a collaborator some of your data from Python
+                          </li>
+                          <li class="fragment">
+                              You need to use external code that takes input or data file (potentially hundreds or thousands of times);
+                              want to automate generation of input files from data in Python
+                          </li>
+                          <li class="fragment">
+                              An external program writes out one or more results files, and you want to read and perform analysis
+                          </li>
+                          <li class="fragment">
+                              You want to keep an intermediate calculation for debugging or validation
+                          </li>
+                        </ul>
                     </section>
 
                     <section>
