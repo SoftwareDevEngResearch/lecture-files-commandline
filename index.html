@@ -398,9 +398,9 @@
                                                             )
                                 timestep = table.row
                                 # Save initial conditions
-                                timestep['time'] = self.reac_net.time
-                                timestep['temperature'] = self.reac.T
-                                timestep['pressure'] = self.reac.thermo.P
+                                timestep['time'] = sim.time
+                                timestep['temperature'] = sim.temperature
+                                timestep['pressure'] = sim.pressure
                                 timestep.append()
 
                                 # Main time integration loop
@@ -423,7 +423,7 @@
                         <h3>Accessing this table</h3>
                         <br>
                         <pre><code data-trim class="python fragment stretch">
-                            with tables.open_file(self.meta['save-file'], 'r') as h5file:
+                            with tables.open_file(filename, 'r') as h5file:
                                 # Load Table with Group name simulation
                                 table = h5file.root.simulation
 
@@ -527,7 +527,7 @@
 
                 <section>
                     <section>
-                        <h3>Creating command-line interfaces for Python progrmas with argparse</h3>
+                        <h3>Creating command-line interfaces for Python programs with argparse</h3>
                         <br>
                         <p class="fragment">
                             Rather than only calling your package from another Python code, you can (fairly easily)
