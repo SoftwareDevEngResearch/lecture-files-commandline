@@ -1,566 +1,197 @@
 <!doctype html>
 <html lang="en">
 
-	<head>
-		<meta charset="utf-8">
+  <head>
+    <meta charset="utf-8">
 
-                <title>Software Development for Engineering Research - Parallel Computing</title>
+                <title>Software Development for Engineering Research - Documentation with Sphinx</title>
 
                 <meta name="description" content="
-                Lecture on parallel computing for ME 599: Software Development for Engineering Research
+                Lecture on documentation for ME 599: Software Development for Engineering Research
                 ">
-		<meta name="author" content="Kyle Niemeyer">
+    <meta name="author" content="Kyle Niemeyer">
 
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+  <link rel="stylesheet" href="css/reveal.css">
+  <link rel="stylesheet" href="css/theme/simple.css" id="theme">
 
-		<!-- For syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+  <!-- For syntax highlighting -->
+  <link rel="stylesheet" href="lib/css/zenburn.css">
 
-		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
-		<script>
-			if( window.location.search.match( /print-pdf/gi ) ) {
-				var link = document.createElement( 'link' );
-				link.rel = 'stylesheet';
-				link.type = 'text/css';
-				link.href = 'css/print/pdf.css';
-				document.getElementsByTagName( 'head' )[0].appendChild( link );
-			}
-		</script>
+  <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+  <script>
+  if( window.location.search.match( /print-pdf/gi ) ) {
+  var link = document.createElement( 'link' );
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = 'css/print/pdf.css';
+  document.getElementsByTagName( 'head' )[0].appendChild( link );
+  }
+  </script>
 
-		<!--[if lt IE 9]>
-		<script src="lib/js/html5shiv.js"></script>
-		<![endif]-->
-	</head>
+  <!--[if lt IE 9]>
+  <script src="lib/js/html5shiv.js"></script>
+  <![endif]-->
+  </head>
 
-	<body>
+  <body>
 
-		<div class="reveal">
+  <div class="reveal">
 
-			<!-- Any section element inside of this container is displayed as a slide -->
-			<div class="slides">
-                <section>
-                    <h2>Intro. to Parallel Computing</h2>
-                    <h3>Software Development for Engineering Research</h3>
-                    <br/>
-                    <h3>Kyle Niemeyer. 10 May 2019</h3>
-                    <h3>ME 599, Corvallis, OR</h3>
-                </section>
-                <section>
-                    <section>
-                        <h2>Today: Introduction to parallel computing (in Python)</h2>
-                        <br/>
-                        <p class="fragment">If you want more, check out <a href="http://web.engr.oregonstate.edu/~mjb/cs575/">CS 475/575 Parallel Programming</a>.
-                        </p>
-                    </section>
+  <!-- Any section element inside of this container is displayed as a slide -->
+  <div class="slides">
+  <section>
+      <h2>Intro. to Parallel Computing</h2>
+      <h3>Documentation with Sphinx</h3>
+      <br/>
+      <h3>Kyle Niemeyer. 29 May 2019</h3>
+      <h3>ME 599, Corvallis, OR</h3>
+  </section>
+  <section data-markdown>
+      <textarea data-template>
+          ## Today: (Quickly) Building a documentation website with Sphinx
 
-                    <section>
-                        <h3>Approaching parallelism:</h3>
-                        <br/>
-                        <ul>
-                            <li class="fragment">How do I do many things at once?
-                            </li>
-                            <li class="fragment">How do I do <em>one thing</em> faster?
-                            </li>
-                        </ul>
-                        <br/>
-                        <p class="fragment">Computer: perform many simultaneous tasks</p>
-                        <p class="fragment">Developer: determine dependencies between code and data</p>
-                    </section>
+          ### Also: using doctr to autodeploy docs with Travis!
+      </textarea>
+  </section>
+  <section>
+    <section data-markdown>
+      <textarea data-template>
+        ### [Sphinx quickstart](https://www.sphinx-doc.org/en/master/usage/quickstart.html)
 
-                    <section>
-                        <p class="fragment">Up until now: serial thinking, like "x then y then z"</p>
-                        <br/>
-                        <p class="fragment">Benefit of parallelism: problems execute faster&mdash;sometimes <em>much</em> faster.</p>
-                        <p class="fragment">Downside to parallelism: harder to program, debug, open files, print to screen.</p>
-                    </section>
+        - Install sphinx: `conda install sphinx`
+        - In the top-level of your repo, run `sphinx-quickstart`
+        - Answer questions; accept most defaults. Say yes to `autodoc` extension
+        </textarea>
+    </section>
 
-                    <section>
-                        <h3>Why go parallel?</h3></br>
-                        <p class="fragment">First: wait until your code works and you need it.</p>
-                        <br/>
-                        <ul>
-                            <li class="fragment">The problem creates or requires too much data for a normal machine.
-                            </li>
-                            <li class="fragment">The sun would explode before the computation would finish.
-                            </li>
-                            <li class="fragment">The algorithm is easy to parallelize.
-                            </li>
-                            <li class="fragment">The physics itself cannot be simulated at all with smaller resources.
-                            </li>
-                        </ul>
-                    </section>
-                </section>
+    <section data-markdown>
+      <textarea data-template>
+        ### Add content
 
-                <section>
-                    <section>
-                        <h3>Scale and Scalability</h3>
-                        <br/>
-                        <img class="fragment" src="./images/sense-and-sensibility.jpg" height="500" alt="Scale and Scalability 'book' image">
-                    </section>
+        - In the `docs` directory, add an `installation.rst` file (for example)
+        - Try building with `make html`
+        - Did sphinx find and automatically build docs for your modules? Look for `.rst` files for each module.
+        </textarea>
+    </section>
 
-                    <section>
-                        <h3>Scale and Scalability</h3>
-                        <br/>
-                        <p class="fragment">
-                            <strong>Scale:</strong> size of problem
-                        </p>
-                        <p class="fragment">
-                            Scale is proportional to number of processes <code>P</code> used,
-                            and thus the maximum <em>degree of parallelism</em> possible.
-                        </p>
-                        <p class="fragment">
-                            <strong>FLOPS:</strong> number of floating-point operations per second
-                        </p>
-                    </section>
+    <section data-markdown>
+      <textarea data-template>
+        ### Configuration
 
-                    <section>
-                        <h3>Scaling up code</h3>
-                        <br/>
-                        <p class="fragment">
-                            Scale up slowly&mdash;start with one processor, then 10, 100, etc.
-                        </p>
-                        <p class="fragment">
-                            <strong>scalability:</strong> how easy or hard it is to scale code
-                        </p>
-                    </section>
-                    <section>
-                        <p>
-                            <strong>strong scaling:</strong> how runtime changes as a function of processor number
-                            for a fixed total problem size
-                        </p>
-                        <p class="fragment">
-                            speedup \(s\): ratio of time on one processor, \(t_1\), to time on \(P\) processors, \(t_P\):
-                        </p>
-                        <div class="fragment">
-                            <script type="math/tex; mode=display">
-                                s(P) = \frac{t_1}{t_P}
-                            </script>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Strong scaling</h3><br/>
-                            <p class="fragment">
-                                Efficient system: linear strong scaling speedup. For example, <a href="http://www.pyfr.org">PyFR</a> CFD code:
+        Other useful things for `conf.py`:
 
-                            </p>
-                            <img class="fragment" src="./images/pyfr-strongscaling.png" height="300" alt="pyFR strong scaling performance">
-                            <div class="fragment">
-                                <small>
-                                    Ref: P Vincent et al. "PyFR: Next-Generation High-Order Computational Fluid Dynamics on Many-Core Hardware." 22nd AIAA CFD Conference. 2015.
-                                </small>
-                            </div>
-                    </section>
-                    <section>
-                        <p class="fragment">
-                            <strong>weak scaling:</strong> how runtime changes as a function of processor number
-                            for a fixed problem size per processor
-                        </p>
-                        <p class="fragment">
-                            sizeup \(z\), for a problem size \(N\):
-                        </p>
-                        <div class="fragment">
-                            <script type="math/tex; mode=display">
-                                z(P) = \frac{t_1}{t_P} \times \frac{N_P}{N_1}
-                            </script>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Weak scaling</h3>
-                        <p class="fragment">
-                            Efficient system: linear sizeup. Or, constant time with additional processors/problem size.
-                            For example, <a href="http://www.pyfr.org">PyFR</a> CFD code:
-                        </p>
-                        <img class="fragment" src="./images/pyfr-weakscaling.png" height="300" alt="pyFR weak scaling performance">
-                        <div class="fragment">
-                            <small>
-                                Ref: P Vincent et al. "PyFR: Next-Generation High-Order Computational Fluid Dynamics on Many-Core Hardware." 22nd AIAA CFD Conference. 2015.
-                            </small>
-                        </div>
-                    </section>
+        - In extensions, add `sphinx.ext.napoleon` (for Google/NumPy-style docstring reading) and `sphinx.ext.mathjax` (if you want LaTeX-based equations), and `sphinx.ext.intersphinx` for connections to other docs
+        - Set `napoleon_numpy_docstring` and `napoleon_google_docstring` to `True`/`False` depending on your docstring style.
+        - Add an `intersphinx_mapping` dict to connect to other docs
 
-                    <section>
-                        <h3>Amdahl's Law</h3>
-                        <p class="fragment">
-                            Some fraction of an algorithm, \(\alpha\), cannot be parallelized.
-                            Then, the maximum speedup/sizeup for \(P\) processors is:
-                        </p>
-                        <div class="fragment">
-                            <script type="math/tex; mode=display">
-                                \max (s(P)) = \frac{1}{\alpha - \frac{1 - \alpha}{P}}
-                            </script>
-                        </div>
+        </textarea>
+    </section>
 
-                        <p class="fragment">
-                            Then, the theoretically max speedup is:
-                        </p>
-                        <div class="fragment">
-                            <script type="math/tex; mode=display">
-                                \max (s) = \frac{1}{\alpha}
-                            </script>
-                        </div>
-                    </section>
+    <section data-markdown>
+      <textarea data-template>
+        ### `intersphinx_mapping`
 
-                </section>
+        <pre><code data-trim class="python">
+          intersphinx_mapping = {
+            'python': ('https://docs.python.org/3.6', None),
+            'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+            'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+          }
+        </code></pre>
+        </textarea>
+    </section>
 
-                <section>
-                    <h3>Types of problems</h3>
-                    <br/>
-                    <div style="font-size:30px">
-                        <p class="fragment">
-                            <strong>embarassingly parallel:</strong> algorithms with a high degree
-                            of independence and little communication between parts
-                        </p>
-                        <p class="fragment">
-                            Examples: summing large arrays, matrix multiplication, Monte Carlo simulations,
-                            some optimization approaches (e.g., stochastic and genetic algorithms)
-                        </p>
-                    </div>
-                    <div style="font-size:30px">
-                        <p class="fragment">
-                            Other algorithms have unavoidable bottlenecks: inverting a matrix, ODE integration, etc.
-                        </p>
-                        <p class="fragment">
-                            Not all hope is lost! Some parts may still benefit from parallelization.
-                        </p>
-                    </div>
-                </section>
+    <section data-markdown>
+      <textarea data-template>
+        ### Sphinx with Markdown
 
-                <section>
-                    <section>
-                        <h3>Example: N-body problem</h3>
-                        <br/>
-                        <p class="fragment" style="font-size:30px">generalization of the classic 2-body problem
-                            that governs the equations of motion for two masses. From Newton's law of gravity:
-                        </p>
-                        <div class="fragment">
-                            <script type="math/tex; mode=display">
-                                \frac{dp}{dt} = G \frac{m_1 m_2}{r^2}
-                            </script>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Equations of motion:</h3>
-                        <br/>
-                        <div class="fragment">
-                            <script type="math/tex; mode=display">
-                                \begin{aligned}
-                                \mathbf{x}_{i,s} & = G \sum_{j=1, i \neq j} \frac{m_j (\mathbf{x}_{j,s-1} - \mathbf{x}_{i,s-1})}{||\mathbf{x}_{j,s-1} - \mathbf{x}_{i,s-1}||^3} \Delta t^2 + \mathbf{v}_{i,s-1} \Delta t + \mathbf{x}_{i,s-1} \\
-                                \mathbf{v}_{i,s} & = G \sum_{j=1, i \neq j} \frac{m_j (\mathbf{x}_{j,s-1} - \mathbf{x}_{i,s-1})}{||\mathbf{x}_{j,s-1} - \mathbf{x}_{i,s-1}||^3} \Delta t + \mathbf{v}_{i,s-1}
-                                \end{aligned}
-                            </script>
-                        </div>
-                    </section>
+        Generally Sphinx uses ReStructuredText (`.rst`) files for documentation.
 
-                    <section>
-                        <h3>No parallelism</h3>
-                        <div style="font-size:15px">
-                        <pre><code data-trim class="python">
-                            import numpy as np
+        But, you can also have it read Markdown files with the `recommonmark` extension:
 
-                            def remove_i(x, i):
-                                """Drops the ith element of an array."""
-                                shape = (x.shape[0]-1,) + x.shape[1:]
-                                y = np.empty(shape, dtype=float)
-                                y[:i] = x[:i]
-                                y[i:] = x[i+1:]
-                                return y
+        - `conda install recommonmark`
+        - Add `'recommonmark'` to the `extensions` list in `conf.py`
+        - Extend the `source_suffix` dict:
 
-                            def a(i, x, G, m):
-                                """The acceleration of the ith mass."""
-                                x_i = x[i]
-                                x_j = remove_i(x, i) # don't compute on itself
-                                m_j = remove_i(m, i)
-                                diff = x_j - x_i
-                                mag3 = np.sum(diff**2, axis=1)**1.5
-                                # compute acceleration on ith mass
-                                result = G * np.sum(diff * (m_j / mag3)[:,np.newaxis], axis=0)
-                                return result
-                        </code></pre>
-                        <pre><code data-trim class="python">
-                            def timestep(x0, v0, G, m, dt):
-                                """Computes the next position and velocity for all masses given
-                                initial conditions and a time step size.
-                                """
-                                N = len(x0)
-                                x1 = np.empty(x0.shape, dtype=float)
-                                v1 = np.empty(v0.shape, dtype=float)
-                                for i in range(N): # update locations for all masses each step
-                                    a_i0 = a(i, x0, G, m)
-                                    v1[i] = a_i0 * dt + v0[i]
-                                    x1[i] = a_i0 * dt**2 + v0[i] * dt + x0[i]
-                                return x1, v1
+        <pre><code data-trim class="python">
+          source_suffix = {
+            '.rst': 'restructuredtext',
+            '.txt': 'markdown',
+            '.md': 'markdown',
+          }
+        </code></pre>
+        </textarea>
+    </section>
 
-                            def initial_cond(N, D):
-                                """Generates initial conditions for N unity masses at rest
-                                starting at random positions in D-dimensional space.
-                                """
-                                x0 = np.random.rand(N, D) # use random initial locations
-                                v0 = np.zeros((N, D), dtype=float)
-                                m = np.ones(N, dtype=float)
-                                return x0, v0, m
-                        </code></pre>
-                        </div>
-                    </section>
-                    <section>
-                        <div>
-                        <pre><code data-trim class="python">
-                            x0, v0, m = initial_cond(10, 2)
-                            x1, v1 = timestep(x0, v0, 1.0, m, 1.0e-3)
-                        </code></pre>
+    <section data-markdown>
+      <textarea data-template>
+        ### Other Sphinx goodness:
 
-                        <p class="fragment">Driver function that simulates \(S\) time steps:</p>
-                        <pre><code data-trim class="python fragment">
-                            def simulate(N, D, S, G, dt):
-                                x0, v0, m = initial_cond(N, D)
-                                for s in range(S):
-                                    x1, v1 = timestep(x0, v0, G, m, dt)
-                                    x0, v0 = x1, v1
-                        </code></pre>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Measure performance:</h3>
-                        <br/>
-                        <div>
-                        <pre><code data-trim class="python">
-                            import time
-                            Ns = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
-                            runtimes = []
-                            for N in Ns:
-                                start = time.time()
-                                simulate(N, 3, 300, 1.0, 1e-3)
-                                stop = time.time()
-                                runtimes.append(stop - start)
-                        </code></pre>
-                        </div>
-                        <p class="fragment">Does the problem scale quadratically?</p>
-                    </section>
+        - You can configure it to generate a LaTeX-based PDF (i.e., a single user manual)
+        - You can have versioned documentation, and also simultaneously have "devel" docs for unreleased changes.
+        </textarea>
+    </section>
+  </section>
 
-                    <section>
-                        <h3>Threads</h3>
-                        <br/>
-                        <p class="fragment">Threads perform work and are not blocked by work of other threads.</p>
-                        <p class="fragment">Threads can communicate with each other through state</p>
-                    </section>
-                    <section>
-                        <h3>Threads: probably don't use in Python.</h3>
-                        <br/>
-                        <p class="fragment">All threads execute in the same process as Python itself.</p>
-                        <p class="fragment">Where to use? If you have high latency tasks where you can use spare time for another task (e.g., downloading a large file)</p>
-                    </section>
+  <section data-markdown>
+    <textarea data-template>
+      ### Using [doctr](https://drdoctr.github.io)
 
-                    <section>
-                        <h3>N-body with threading</h3>
-                        <div style="font-size:20px">
-                        <pre><code data-trim class="python">
-                            from threading import Thread
+      Doctr helps autodeploy docs to GitHub Pages using Travis CI.
 
-                            class Worker(Thread):
-                                """Computes x, v, and a of the ith body."""
-                                def __init__(self, *args, **kwargs):
-                                    super(Worker, self).__init__(*args, **kwargs)
-                                    self.inputs = [] # buffer of work for thraeds
-                                    self.results = [] # buffer of return values
-                                    self.running = True # setting to False causes run() to end safely
-                                    self.daemon = True # allow thread to be terminated with Python
-                                    self.start()
+      Steps:
 
-                                def run(self):
-                                    while self.running:
-                                        if len(self.inputs) == 0: # check for work
-                                            continue
-                                        i, x0, v0, G, m, dt = self.inputs.pop(0)
-                                        a_i0 = a(i, x0, G, m) # body of original timestep()
-                                        v_i1 = a_i0 * dt + v0[i]
-                                        x_i1 = a_i0 * dt**2 + v0[i] * dt + x0[i]
-                                        result = (i, x_i1, v_i1)
-                                        self.results.append(result)
-                        </code></pre>
-                        </div>
-                    </section>
+      - Install: `conda install -c conda-forge doctr`
+      - `doctr configure`
+  </section>
 
-                    <section>
-                        <h3>Thread pools</h3>
-                        <p class="fragment">Expensive to create and start threads, so create pool that persists</p>
+  </div>
 
-                        <div style="font-size:20px">
-                        <pre><code data-trim class="python fragment">
-                            class Pool(object):
-                                """A collection of P worker threads that distributes tasks
-                                evenly across them.
-                                """
-                                def __init__(self, size):
-                                    self.size = size
-                                    # create new workers based on size
-                                    self.workers = [Worker() for p in range(size)]
+  </div>
 
-                                def do(self, tasks):
-                                    for p in range(self.size):
-                                        self.workers[p].inputs += tasks[p::self.size] # evenly distribute tasks
-                                    while any([len(worker.inputs) != 0 for worker in self.workers]):
-                                        pass # wait for all workers to finish
-                                    results = []
-                                    for worker in self.workers: # get results back from workers
-                                        results += worker.results
-                                        worker.results.clear()
-                                    return results # return complete list of results for all inputs
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
 
-                                def __del__(self): # stop workers when pool is shut down
-                                    for worker in self.workers:
-                                        worker.running = False
-                        </code></pre>
-                        </div>
-                    </section>
-                    <section>
-                        <div style="font-size:20px">
-                        <pre><code data-trim class="python">
-                            def timestep(x0, v0, G, m, dt, pool):
-                                """Computes the next position and velocity for all masses given
-                                initial conditions and a time step size.
-                                """
-                                N = len(x0)
-                                tasks = [(i, x0, v0, G, m, dt) for i in range(N)] # create task for each body
-                                results = pool.do(tasks) # run tasks
-                                x1 = np.empty(x0.shape, dtype=float)
-                                v1 = np.empty(v0.shape, dtype=float)
-                                for i, x_i1, v_i1 in results: # rearrange results (probably not in order)
-                                    x1[i] = x_i1
-                                    v1[i] = v_i1
-                                return x1, v1
-                        </code></pre>
-                        <p class="fragment">How does simulation perform as function of \(P\)?</p>
-                        <pre><code data-trim class="python fragment">
-                            Ps = [1, 2, 4, 8]
-                            runtimes = []
-                            for P in Ps:
-                                start = time.time()
-                                simulate(P, 64, 3, 300, 1.0, 1e-3)
-                                stop = time.time()
-                                runtimes.append(stop - start)
-                        </code></pre>
-                        </div>
-                    </section>
+  <script>
 
-                    <section>
-                        <h3>Multiprocessing</h3>
-                        <br/>
-                        <p class="fragment">More like threading available in other languages...</p>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+  controls: true,
+  progress: true,
+  history: true,
+  center: true,
 
-                        <p class="fragment">Can't be used directly from interactive interpreter; main module must be importable by fork processes</p>
-
-                        <p class="fragment">Provides <code>Pool</code> class for us, used with powerful <code>map()</code> function.</p>
-
-                    </section>
-                    <section>
-                        <div style="font-size:20px">
-                        <pre><code data-trim class="python">
-                            from multiprocessing import Pool
-
-                            # function needs one argument
-                            def timestep_i(args):
-                                """Computes the next position and velocity for the ith mass."""
-                                i, x0, v0, G, m, dt = args # unpack arguments to original function
-                                a_i0 = a(i, x0, G, m) # body of original timestep()
-                                v_i1 = a_i0 * dt + v0[i]
-                                x_i1 = a_i0 * dt**2 + v0[i] * dt + x0[i]
-                                return i, x_i1, v_i1
-                        </code></pre>
-
-                        <pre><code data-trim class="python fragment">
-                            def timestep(x0, v0, G, m, dt, pool):
-                                """Computes the next position and velocity for all masses given
-                                initial conditions and a time step size.
-                                """
-                                N = len(x0)
-                                tasks = [(i, x0, v0, G, m, dt) for i in range(N)]
-                                results = pool.map(timestep_i, tasks) # replace old do() with Pool.map()
-                                x1 = np.empty(x0.shape, dtype=float)
-                                v1 = np.empty(v0.shape, dtype=float)
-                                for i, x_i1, v_i1 in results:
-                                    x1[i] = x_i1
-                                    v1[i] = v_i1
-                                return x1, v1
-                        </code></pre>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h3>How does <code>multiprocessing</code> scale?</h3>
-                        <pre><code data-trim class="python">
-                            import time
-                            Ps = [1, 2, 4, 8]
-                            runtimes = []
-                            for P in Ps:
-                                start = time.time()
-                                simulate(P, 256, 3, 300, 1.0, 1e-3)
-                                stop = time.time()
-                                runtimes.append(stop - start)
-                        </code></pre>
-                    </section>
-
-                </section>
-
-                <section>
-                    <section>
-                        <h3>MPI: Message-Passing Interface</h3>
-                        <p class="fragment">Supercomputing is built on MPI.</p>
-
-                        <p class="fragment">MPI scales from hundreds of thousands to millions of processors.</p>
-
-                        <p class="fragment">Processes are called ranks and given integer identifiers; rank 0 is usually the "master" that controls other ranks. All about communication.</p>
-
-                        <p class="fragment">Can be used in Python and NumPy arrays with <code>mpi4py</code></p>
-                    </section>
-                </section>
-
-			</div>
-
-		</div>
-
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
-
-		<script>
-
-			// Full list of configuration options available here:
-			// https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				history: true,
-				center: true,
-
-				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+  theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+  transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
 
                 math: {
                     mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
                     config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
                 },
 
-				// Parallax scrolling
-				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
-				// parallaxBackgroundSize: '2100px 900px',
+  // Parallax scrolling
+  // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+  // parallaxBackgroundSize: '2100px 900px',
 
-				// Optional libraries used to extend on reveal.js
-				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+  { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+  { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+  { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+  { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+  { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+  { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
                     { src: 'plugin/math/math.js', async: true }
-				]
-			});
+  ]
+  });
 
-		</script>
+  </script>
 
-	</body>
+  </body>
 </html>
